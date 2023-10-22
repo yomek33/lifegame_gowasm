@@ -25,21 +25,26 @@ const (
 
 var grid [row][col]bool
 
-func initGrid(this js.Value, args []js.Value) interface{} {
-	inputArray := args[0]
 
-	var initGrid []interface{}
+func initGrid(_ js.Value, args []js.Value) interface{} {
+    inputArray := args[0]
 
-	for i := 0; i < inputArray.Length(); i++ {
-		cell := inputArray.Index(i)
-		row := cell.Index(0).Int()
-		col := cell.Index(1).Int()
+    var initGrid []interface{}
 
-		jsRow := js.Global().Get("Array").New(row, col)
-		initGrid = append(initGrid, jsRow)
-		grid[row][col] = true
-	}
-	jsGrid := js.Global().Get("Array").New(initGrid)
+    for i := 0; i < inputArray.Length(); i++ {
+        cell := inputArray.Index(i)
+        row := cell.Index(0)
+        col := cell.Index(1)
 
-	return jsGrid
+        jsRow := js.Global().Get("Array").New()
+        jsRow.Call("push", row.Int())
+        jsRow.Call("push", col.Int())
+
+        initGrid = append(initGrid, jsRow)
+		grid[row.Int()][col.Int()] = true
+    }
+
+    jsGrid := js.Global().Get("Array").New(initGrid)
+
+    return jsGrid
 }

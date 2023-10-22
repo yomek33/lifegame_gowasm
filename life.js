@@ -17,17 +17,18 @@ function createGrid() {
 }
 
 const clickedCells = [];
-
 function cellClickHandler(event) {
   const targetCell = event.target;
-  const row = targetCell.getAttribute("data-row");
-  const col = targetCell.getAttribute("data-col");
+  const row = parseInt(targetCell.getAttribute("data-row"));
+  const col = parseInt(targetCell.getAttribute("data-col"));
   // console.log(`クリックされたセル - 行: ${row}, 列: ${col}`);
   targetCell.classList.add("clicked");
+
   clickedCells.push([row, col]);
 }
 
 // ボタンがクリックされたときの処理
+
 document.getElementById("runButton").addEventListener("click", function () {
   console.log("Sending data to the server:", clickedCells);
 });
