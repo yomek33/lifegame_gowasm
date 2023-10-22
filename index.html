@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Conway's Game of Life</title>
+    <style>
+      #grid-container {
+        display: grid;
+        grid-template-columns: repeat(30, 20px);
+        gap: 1px; /* Gap between cells */
+      }
+      .cell {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+      }
+      .cell.clicked {
+        background-color: pink;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="grid-container"></div>
+    <button id="runButton" disabled>Send Data to Server</button>
+    <button id="resultButton">result</button>
+    <div id="result"></div>
+    <script src="life.js"></script>
+    <script src="wasm_exec.js"></script>
+    <script>
+      if (!WebAssembly.instantiateStreaming) {
+        // polyfill
+        WebAssembly.instantiateStreaming = async (resp, importObject) => {
+          const source = await (await resp).arrayBuffer();
+          return await WebAssembly.instantiate(source, importObject);
+        };
+      }
+
+      const go = new Go();
+      let mod, inst;
+      WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject)
+        .then((result) => {
+          mod = result.module;
+          inst = result.instance;
+          document.getElementById("runButton").disabled = false;
+          go.run(inst);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+      async function initGrid(data) {
+        try {
+          console.log(go_initGrid(data));
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
+      document
+        .getElementById("resultButton")
+        .addEventListener("click", function () {
+          initGrid([clickedCells]);
+        });
+    </script>
+  </body>
+</html>
