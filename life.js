@@ -55,3 +55,15 @@ function updateGrid(cells) {
     }
   });
 }
+
+//色が塗られたセルの座標を取得
+function getClickedCells() {
+  const clickedCells = [];
+  const clickedElems = document.querySelectorAll(".clicked");
+  clickedElems.forEach((elem) => {
+    const row = parseInt(elem.getAttribute("data-row"));
+    const col = parseInt(elem.getAttribute("data-col"));
+    clickedCells.push([row, col]);
+  });
+  return clickedCells;
+}

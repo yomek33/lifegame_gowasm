@@ -3,9 +3,9 @@
 
 package main
 
-import (
-	"syscall/js"
-)
+import "syscall/js"
+
+
 
 func main() {
 	c := make(chan struct{}, 0)
@@ -14,7 +14,7 @@ func main() {
 }
 
 func registerCallbacks() {
-	js.Global().Set("go_initGrid", js.FuncOf(initGrid))
+	js.Global().Set("go_initGrid", js.FuncOf(initGridfromJS))
 }
 
 // life game
@@ -26,30 +26,37 @@ const (
 var grid [row][col]bool
 
 
-func initGrid(_ js.Value, args []js.Value) interface{} {
+func initGridfromJS(_ js.Value, args []js.Value) interface{} {
     inputArray := args[0]
 
-    var initGrid []interface{}
+    var updatedGridtoJS []interface{}
 
     for i := 0; i < inputArray.Length(); i++ {
         cell := inputArray.Index(i)
         row := cell.Index(0)
         col := cell.Index(1)
-
-        jsRow := js.Global().Get("Array").New()
-        jsRow.Call("push", row.Int())
-        jsRow.Call("push", col.Int())
-
-        initGrid = append(initGrid, jsRow)
 		grid[row.Int()][col.Int()] = true
     }
 
-    jsGrid := js.Global().Get("Array").New(initGrid)
+	updatedGrid :=UpdateGrid(grid)
+	for i := 0; i < row; i++ {
+		for j := 0; j < col; j++ {
+			if updatedGrid[i][j] {
+				jsRow := js.Global().Get("Array").New()
+				jsRow.Call("push", i)
+				jsRow.Call("push", j)
+				updatedGridtoJS = append(updatedGridtoJS, jsRow)
+			}
+		}
+	}
+
+	
+    jsGrid := js.Global().Get("Array").New(updatedGridtoJS)
 
     return jsGrid
 }
 
-func updateGrid() {
+func UpdateGrid(grid [row][col]bool) [row][col]bool {
 	var newGrid [row][col]bool
 	for i := 0; i < row; i++ {
 		for j := 0; j < col; j++ {
@@ -80,5 +87,5 @@ func updateGrid() {
 		}
 	}
 	//グリットの状態を更新する
-	grid = newGrid
+	return newGrid
 }

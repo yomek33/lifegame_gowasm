@@ -48,10 +48,7 @@
         });
       async function initGrid() {
         try {
-          return go_initGrid([
-            [1, 2],
-            [3, 4],
-          ]);
+          return go_initGrid(clickedCells);
         } catch (err) {
           inst = await WebAssembly.instantiate(mod, go.importObject);
           go.run(inst);
@@ -63,6 +60,8 @@
         .addEventListener("click", function () {
           updatedCells = initGrid();
           updatedCells.then((updatedCells) => {
+            console.log(updatedCells);
+            console.log(getClickedCells());
             updateGrid(updatedCells);
           });
         });
