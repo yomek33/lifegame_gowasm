@@ -20,7 +20,7 @@
   </head>
   <body>
     <div id="grid-container"></div>
-    <button id="runButton" disabled>Send Data to Server</button>
+    <button id="runButton" disabled>Send Data</button>
     <button id="resultButton">result</button>
     <div id="result"></div>
     <script src="life.js"></script>
@@ -46,9 +46,12 @@
         .catch((err) => {
           console.error(err);
         });
-      async function initGrid(data) {
+      async function initGrid() {
         try {
-          console.log(go_initGrid(data));
+          return go_initGrid([
+            [1, 2],
+            [3, 4],
+          ]);
         } catch (err) {
           inst = await WebAssembly.instantiate(mod, go.importObject);
           go.run(inst);
@@ -58,7 +61,10 @@
       document
         .getElementById("resultButton")
         .addEventListener("click", function () {
-          initGrid(clickedCells);
+          updatedCells = initGrid();
+          updatedCells.then((updatedCells) => {
+            updateGrid(updatedCells);
+          });
         });
     </script>
   </body>

@@ -37,3 +37,21 @@ createGrid();
 
 // セルのクリックイベントを追加
 gridContainer.addEventListener("click", cellClickHandler);
+
+//指定した座標のセルを塗る cells=[[1,2],[3,4]]
+function updateGrid(cells) {
+  const innerArray = cells[0];
+  innerArray.forEach((cell) => {
+    const row = cell[0];
+    const col = cell[1];
+    const cellElem = document.querySelector(
+      `.cell[data-row="${row}"][data-col="${col}"]`
+    );
+    if (cellElem) {
+      // セルが見つかった場合のみクラスを追加
+      cellElem.classList.add("clicked");
+    } else {
+      console.log(`セルが見つかりません - 行: ${row}, 列: ${col}`);
+    }
+  });
+}
