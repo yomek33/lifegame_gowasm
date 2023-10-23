@@ -1,91 +1,97 @@
-//go:build js && wasm
-// +build js,wasm
-
 package main
 
-import "syscall/js"
+import (
+	"syscall/js"
+)
 
 
+var (
+    numRows       = 30
+    numCols       = 30
+    gridContainer js.Value
+    coloredCells  []js.Value
+)
 
 func main() {
-	c := make(chan struct{}, 0)
+    c := make(chan struct{}, 0)
 	registerCallbacks()
-	<-c
+    <-c
 }
 
 func registerCallbacks() {
-	js.Global().Set("go_initGrid", js.FuncOf(initGridfromJS))
+	js.Global().Set("go_createGrid", js.FuncOf(createGrid))
+    js.Global().Set("go_cellClickHandler", js.FuncOf(cellClickHandler))
+    js.Global().Get("document").Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runButtonClicked))
+    js.Global().Set("go_updateGrid", js.FuncOf(updateGrid))
+    js.Global().Set("go_clearAllCellColors", js.FuncOf(clearAllCellColors))
 }
 
-// life game
-const (
-	row = 30
-	col = 30
-)
+func createGrid(_ js.Value, _ []js.Value) interface{} {
+    gridContainer = js.Global().Get("document").Call("getElementById", "grid-container")
+    for i := 0; i < numRows; i++ {
+        for j := 0; j < numCols; j++ {
+            cell := js.Global().Get("document").Call("createElement", "div")
+            cell.Set("className", "cell")
+            cell.Call("setAttribute", "data-row", i)
+            cell.Call("setAttribute", "data-col", j)
+            gridContainer.Call("appendChild", cell)
+        }
+    }
+    return nil
+}
 
-var grid [row][col]bool
+func cellClickHandler(_ js.Value, args []js.Value) interface{} {
+    targetCell := args[0]
+    row := targetCell.Get("getAttribute").Call("data-row").String()
+    col := targetCell.Get("getAttribute").Call("data-col").String()
 
+    targetCell.Get("classList").Call("add", "clicked")
 
-func initGridfromJS(_ js.Value, args []js.Value) interface{} {
-    inputArray := args[0]
+    coloredCells = append(coloredCells, js.ValueOf([]interface{}{row, col}))
 
-    var updatedGridtoJS []interface{}
+    return nil
+}
 
-    for i := 0; i < inputArray.Length(); i++ {
-        cell := inputArray.Index(i)
-        row := cell.Index(0)
-        col := cell.Index(1)
-		grid[row.Int()][col.Int()] = true
+func runButtonClicked(_ js.Value, _ []js.Value) interface{} {
+    js.Global().Get("console").Call("log", "Sending data to the server:", coloredCells)
+
+    return nil
+}
+
+func updateGrid(this js.Value, args []js.Value) interface{} {
+    cells := args[0]
+
+    clearAllCellColors(this, nil)
+
+    if cells.Length() > 0 {
+        innerArray := cells.Index(0)
+        innerArray.Call("forEach", js.FuncOf(colerGrid))
     }
 
-	updatedGrid :=UpdateGrid(grid)
-	for i := 0; i < row; i++ {
-		for j := 0; j < col; j++ {
-			if updatedGrid[i][j] {
-				jsRow := js.Global().Get("Array").New()
-				jsRow.Call("push", i)
-				jsRow.Call("push", j)
-				updatedGridtoJS = append(updatedGridtoJS, jsRow)
-			}
-		}
-	}
-
-	
-    jsGrid := js.Global().Get("Array").New(updatedGridtoJS)
-
-    return jsGrid
+    return nil
 }
+func colerGrid(_ js.Value, args []js.Value) interface{} {
+            cell := args[0]
+            row := cell.Index(0).String()
+            col := cell.Index(1).String()
 
-func UpdateGrid(grid [row][col]bool) [row][col]bool {
-	var newGrid [row][col]bool
-	for i := 0; i < row; i++ {
-		for j := 0; j < col; j++ {
-			newGrid[i][j] = false
+            cellElem := js.Global().Get("document").Call("querySelector", ".cell[data-row='" + row + "'][data-col='" + col + "']")
+            if cellElem.Truthy() {
+                cellElem.Get("classList").Call("add", "clicked")
+            } else {
+                js.Global().Get("console").Call("log", "セルが見つかりません - 行:", row, "列:", col)
+            }
+
+            return nil
 		}
+func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
+	document := js.Global().Get("document")
+	cellElems := document.Call("querySelectorAll", ".cell.clicked")
+
+	for i := 0; i < cellElems.Length(); i++ {
+		cellElem := cellElems.Index(i)
+		cellElem.Get("classList").Call("remove", "clicked")
 	}
-	for i := 0; i < row; i++ {
-		for j := 0; j < col; j++ {
-			//周囲の生きたセルの数を数える
-			count := 0
-			for x := i - 1; x <= i+1; x++ {
-				for y := j - 1; y <= j+1; y++ {
-					if x >= 0 && x < row && y >= 0 && y < col && grid[x][y] {
-						count++
-					}
-				}
-			}
-			//自分自身は数えない
-			if grid[i][j] {
-				count--
-			}
-			//ルールに沿って次の状態を決定する
-			if grid[i][j] && (count == 2 || count == 3) {
-				newGrid[i][j] = true
-			} else if !grid[i][j] && count == 3 {
-				newGrid[i][j] = true
-			}
-		}
-	}
-	//グリットの状態を更新する
-	return newGrid
+
+	return nil
 }
