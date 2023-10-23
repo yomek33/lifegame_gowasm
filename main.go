@@ -10,6 +10,7 @@ var (
     numCols       = 30
     gridContainer js.Value
     coloredCells  []js.Value
+	cells 		  [][]bool
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 func registerCallbacks() {
 	js.Global().Set("go_createGrid", js.FuncOf(createGrid))
     js.Global().Set("go_cellClickHandler", js.FuncOf(cellClickHandler))
-    js.Global().Get("document").Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runButtonClicked))
+   // js.Global().Get("document").Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runButtonClicked))
     js.Global().Set("go_updateGrid", js.FuncOf(updateGrid))
     js.Global().Set("go_clearAllCellColors", js.FuncOf(clearAllCellColors))
 }
@@ -41,34 +42,34 @@ func createGrid(_ js.Value, _ []js.Value) interface{} {
 }
 
 func cellClickHandler(_ js.Value, args []js.Value) interface{} {
-    targetCell := args[0]
-    row := targetCell.Get("getAttribute").Call("data-row").String()
-    col := targetCell.Get("getAttribute").Call("data-col").String()
-
-    targetCell.Get("classList").Call("add", "clicked")
-
-    coloredCells = append(coloredCells, js.ValueOf([]interface{}{row, col}))
-
-    return nil
+	targetCell := args[0]
+	row := targetCell.Get("getAttribute").Get("data-row")
+	col := targetCell.Get("getAttribute").Get("data-col")
+	targetCell.Get("classList").Call("add", "clicked")
+	// cells[row.Int()][col.Int()] = true
+	coloredCells = append(coloredCells, js.ValueOf([]interface{}{row, col}))
+	return nil
 }
 
-func runButtonClicked(_ js.Value, _ []js.Value) interface{} {
-    js.Global().Get("console").Call("log", "Sending data to the server:", coloredCells)
+// func runButtonClicked(_ js.Value, _ []js.Value) interface{} {
+// println(coloredCells) //[4/4]0x43c040
+//     js.Global().Get("console").Call()
 
-    return nil
-}
+//     return nil
+// }
 
-func updateGrid(this js.Value, args []js.Value) interface{} {
-    cells := args[0]
+func updateGrid(this js.Value, _ []js.Value) interface{} {
+	clearAllCellColors(this, nil)
 
-    clearAllCellColors(this, nil)
+	if len(cells) > 0 {
+		for _, innerArray := range cells {
+			for i := range innerArray {
+				js.Global().Call("colerGrid", js.ValueOf([]interface{}{i, innerArray[i]}))
+			}
+		}
+	}
 
-    if cells.Length() > 0 {
-        innerArray := cells.Index(0)
-        innerArray.Call("forEach", js.FuncOf(colerGrid))
-    }
-
-    return nil
+	return nil
 }
 func colerGrid(_ js.Value, args []js.Value) interface{} {
             cell := args[0]

@@ -24,6 +24,9 @@
     <button id="resultButton">result</button>
     <script src="wasm_exec.js"></script>
     <script>
+      document
+        .getElementById("grid-container")
+        .addEventListener("click", (event) => cellClick(event.target));
       if (!WebAssembly.instantiateStreaming) {
         // polyfill
         WebAssembly.instantiateStreaming = async (resp, importObject) => {
@@ -78,12 +81,6 @@
           console.log(err);
         }
       }
-      document
-        .getElementById("grid-container")
-        .addEventListener("click", (event) => cellClick(event.target));
-      document
-        .getElementById("runButton")
-        .addEventListener("click", runButtonClicked);
     </script>
   </body>
 </html>
