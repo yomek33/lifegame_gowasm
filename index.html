@@ -70,7 +70,15 @@
           console.log(err);
         }
       }
-
+      async function colorgrid(cell) {
+        try {
+          return go_colorgrid(cell);
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
       // Clear all cell colors
       async function clearAllCellColors() {
         try {
