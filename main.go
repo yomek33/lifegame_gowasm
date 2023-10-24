@@ -46,19 +46,19 @@ func cellClickHandler(_ js.Value, args []js.Value) interface{} {
 	return nil
 }
 
-func updateGrid(this js.Value, _ []js.Value) interface{} {
-	clearAllCellColors(this, nil)
+// func updateGrid(this js.Value, _ []js.Value) interface{} {
+// 	clearAllCellColors(this, nil)
 
-	if len(cells) > 0 {
-		for _, innerArray := range cells {
-			for i := range innerArray {
-				js.Global().Call("colerGrid", js.ValueOf([]interface{}{i, innerArray[i]}))
-			}
-		}
-	}
+// 	if len(cells) > 0 {
+// 		for _, innerArray := range cells {
+// 			for i := range innerArray {
+// 				js.Global().Call("colerGrid", js.ValueOf([]interface{}{i, innerArray[i]}))
+// 			}
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func colerGrid(_ js.Value, args []js.Value) interface{} {
 	cell := args[0]
@@ -84,10 +84,11 @@ func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
 
 	return nil
 }
-func addClickedCells(elem js.Value) {
-	elem.Get("classList").Call("add", "clicked")
+
+func addClickedCells(cell js.Value) {
+	cell.Get("classList").Call("add", "clicked")
 }
 
-func removeClickedCells(elem js.Value) {
-	elem.Get("classList").Call("remove", "clicked")
+func removeClickedCells(cell js.Value) {
+	cell.Get("classList").Call("remove", "clicked")
 }
