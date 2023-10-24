@@ -20,12 +20,13 @@
   </head>
   <body>
     <div id="grid-container"></div>
-    <button id="runButton" disabled>Send Data to Server</button>
+    <button id="runButton" disabled>Run</button>
     <button id="resultButton">result</button>
-    <div id="result"></div>
-    <script src="life.js"></script>
     <script src="wasm_exec.js"></script>
     <script>
+      document
+        .getElementById("grid-container")
+        .addEventListener("click", (event) => cellClick(event.target));
       if (!WebAssembly.instantiateStreaming) {
         // polyfill
         WebAssembly.instantiateStreaming = async (resp, importObject) => {
@@ -41,25 +42,53 @@
           mod = result.module;
           inst = result.instance;
           document.getElementById("runButton").disabled = false;
+
           go.run(inst);
+          go_createGrid();
         })
         .catch((err) => {
           console.error(err);
         });
-      async function initGrid(data) {
+
+      async function cellClick(targetCell) {
         try {
-          console.log(go_initGrid(data));
+          return go_cellClickHandler(targetCell);
         } catch (err) {
           inst = await WebAssembly.instantiate(mod, go.importObject);
           go.run(inst);
           console.log(err);
         }
       }
-      document
-        .getElementById("resultButton")
-        .addEventListener("click", function () {
-          initGrid(clickedCells);
-        });
+
+      // Update the grid
+      async function updateGrid(cells) {
+        try {
+          return go_updateGrid(cells);
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
+      async function colorgrid(cell) {
+        try {
+          return go_colorgrid(cell);
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
+      // Clear all cell colors
+      async function clearAllCellColors() {
+        try {
+          return go_clearAllCellColors();
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
     </script>
   </body>
 </html>
