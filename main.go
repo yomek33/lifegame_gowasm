@@ -24,10 +24,9 @@ func main() {
 func registerCallbacks() {
 	js.Global().Set("go_createGrid", js.FuncOf(createGrid))
 	js.Global().Set("go_cellClickHandler", js.FuncOf(cellClickHandler))
-	// js.Global().Get("document").Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runButtonClicked))
-	// js.Global().Set("go_updateGrid", js.FuncOf(updateGrid))
-	// js.Global().Set("go_clearAllCellColors", js.FuncOf(clearAllCellColors))
-	// js.Global().Set("go_colorgrid", js.FuncOf(colerGrid))
+	js.Global().Get("document").Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runUpdateGrid))
+	js.Global().Get("document").Call("getElementById", "reset").Call("addEventListener", "click", js.FuncOf(clearAllCellColors))
+
 }
 
 func createGrid(_ js.Value, _ []js.Value) interface{} {
@@ -47,15 +46,14 @@ func createGrid(_ js.Value, _ []js.Value) interface{} {
 func cellClickHandler(this js.Value, args []js.Value) interface{} {
 	cell := args[0]
 	cell.Get("classList").Call("toggle", "clicked")
-	row := cell.Index(0).Int()
-	col := cell.Index(1).Int()
-
+	row, _ := strconv.Atoi(cell.Call("getAttribute", "data-row").String())
+	col, _ := strconv.Atoi(cell.Call("getAttribute", "data-col").String())
 	grid[row][col] = !grid[row][col]
 	return nil
 }
 
-func runButtonClicked(_ js.Value, _ []js.Value) interface{} {
-	UpdateGrid(grid)
+func runUpdateGrid(_ js.Value, _ []js.Value) interface{} {
+	grid = UpdateGrid(grid)
 	for i := 0; i < numRows; i++ {
 		for j := 0; j < numCols; j++ {
 			cellElem := js.Global().Get("document").Call("querySelector", ".cell[data-row='"+strconv.Itoa(i)+"'][data-col='"+strconv.Itoa(j)+"']")
@@ -103,21 +101,17 @@ func UpdateGrid(grid gridBool) gridBool {
 	return newGrid
 }
 
-// func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
-// 	document := js.Global().Get("document")
-// 	cellElems := document.Call("querySelectorAll", ".cell.clicked")
+func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
+	document := js.Global().Get("document")
+	cellElems := document.Call("querySelectorAll", ".cell.clicked")
 
-// 	for i := 0; i < cellElems.Length(); i++ {
-// 		removeClickedCells(cellElems.Index(i))
-// 	}
-
-// 	return nil
-// }
-
-// func addClickedCells(cell js.Value) {
-// 	cell.Get("classList").Call("add", "clicked")
-// }
-
-// func removeClickedCells(cell js.Value) {
-// 	cell.Get("classList").Call("remove", "clicked")
-// }
+	for i := 0; i < cellElems.Length(); i++ {
+		cellElems.Index(i).Get("classList").Call("remove", "clicked")
+	}
+	for i := 0; i < numRows; i++ {
+		for j := 0; j < numCols; j++ {
+			grid[i][j] = false
+		}
+	}
+	return nil
+}
