@@ -1,5 +1,3 @@
 https://yomek33.github.io/lifegame_gowasm/
 
-- [x] run でセルを更新
-- [ ] 自動更新ボタン
-- [ ] セルの色を増やす
+[Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)
