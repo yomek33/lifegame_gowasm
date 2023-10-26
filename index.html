@@ -59,36 +59,6 @@
           console.log(err);
         }
       }
-
-      // Update the grid
-      async function updateGrid(cells) {
-        try {
-          return go_updateGrid(cells);
-        } catch (err) {
-          inst = await WebAssembly.instantiate(mod, go.importObject);
-          go.run(inst);
-          console.log(err);
-        }
-      }
-      async function colorgrid(cell) {
-        try {
-          return go_colorgrid(cell);
-        } catch (err) {
-          inst = await WebAssembly.instantiate(mod, go.importObject);
-          go.run(inst);
-          console.log(err);
-        }
-      }
-      // Clear all cell colors
-      async function clearAllCellColors() {
-        try {
-          return go_clearAllCellColors();
-        } catch (err) {
-          inst = await WebAssembly.instantiate(mod, go.importObject);
-          go.run(inst);
-          console.log(err);
-        }
-      }
     </script>
   </body>
 </html>

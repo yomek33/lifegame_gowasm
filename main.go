@@ -23,10 +23,8 @@ func main() {
 
 func registerCallbacks() {
 	js.Global().Set("go_createGrid", js.FuncOf(createGrid))
-	js.Global().Set("go_cellClickHandler", js.FuncOf(cellClickHandler))
 	js.Global().Get("document").Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runUpdateGrid))
 	js.Global().Get("document").Call("getElementById", "reset").Call("addEventListener", "click", js.FuncOf(clearAllCellColors))
-
 }
 
 func createGrid(_ js.Value, _ []js.Value) interface{} {
