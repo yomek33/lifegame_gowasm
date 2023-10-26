@@ -11,6 +11,7 @@ var (
 	gridContainer js.Value
 	cellElems     js.Value
 	grid          gridBool
+	document      js.Value
 )
 
 type gridBool [30][30]bool
@@ -22,16 +23,18 @@ func main() {
 }
 
 func registerCallbacks() {
+	document = js.Global().Get("document")
 	js.Global().Set("go_createGrid", js.FuncOf(createGrid))
-	js.Global().Get("document").Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runUpdateGrid))
-	js.Global().Get("document").Call("getElementById", "reset").Call("addEventListener", "click", js.FuncOf(clearAllCellColors))
+	js.Global().Set("go_cellClickHandler", js.FuncOf(cellClickHandler))
+	document.Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runUpdateGrid))
+	document.Call("getElementById", "reset").Call("addEventListener", "click", js.FuncOf(clearAllCellColors))
 }
 
 func createGrid(_ js.Value, _ []js.Value) interface{} {
-	gridContainer = js.Global().Get("document").Call("getElementById", "grid-container")
+	gridContainer = document.Call("getElementById", "grid-container")
 	for i := 0; i < numRows; i++ {
 		for j := 0; j < numCols; j++ {
-			cell := js.Global().Get("document").Call("createElement", "div")
+			cell := document.Call("createElement", "div")
 			cell.Set("className", "cell")
 			cell.Call("setAttribute", "data-row", i)
 			cell.Call("setAttribute", "data-col", j)
@@ -54,12 +57,26 @@ func runUpdateGrid(_ js.Value, _ []js.Value) interface{} {
 	grid = UpdateGrid(grid)
 	for i := 0; i < numRows; i++ {
 		for j := 0; j < numCols; j++ {
-			cellElem := js.Global().Get("document").Call("querySelector", ".cell[data-row='"+strconv.Itoa(i)+"'][data-col='"+strconv.Itoa(j)+"']")
+			cellElem := document.Call("querySelector", ".cell[data-row='"+strconv.Itoa(i)+"'][data-col='"+strconv.Itoa(j)+"']")
 			if grid[i][j] {
 				cellElem.Get("classList").Call("add", "clicked")
 			} else {
 				cellElem.Get("classList").Call("remove", "clicked")
 			}
+		}
+	}
+	return nil
+}
+
+func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
+	cellElems := document.Call("querySelectorAll", ".cell.clicked")
+
+	for i := 0; i < cellElems.Length(); i++ {
+		cellElems.Index(i).Get("classList").Call("remove", "clicked")
+	}
+	for i := 0; i < numRows; i++ {
+		for j := 0; j < numCols; j++ {
+			grid[i][j] = false
 		}
 	}
 	return nil
@@ -95,21 +112,5 @@ func UpdateGrid(grid gridBool) gridBool {
 			}
 		}
 	}
-	//グリットの状態を更新する
 	return newGrid
-}
-
-func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
-	document := js.Global().Get("document")
-	cellElems := document.Call("querySelectorAll", ".cell.clicked")
-
-	for i := 0; i < cellElems.Length(); i++ {
-		cellElems.Index(i).Get("classList").Call("remove", "clicked")
-	}
-	for i := 0; i < numRows; i++ {
-		for j := 0; j < numCols; j++ {
-			grid[i][j] = false
-		}
-	}
-	return nil
 }
