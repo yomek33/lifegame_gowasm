@@ -15,6 +15,7 @@ var (
 )
 
 type gridBool [30][30]bool
+type gridInt [][]int
 
 func main() {
 	c := make(chan struct{}, 0)
@@ -26,8 +27,11 @@ func registerCallbacks() {
 	document = js.Global().Get("document")
 	js.Global().Set("go_createGrid", js.FuncOf(createGrid))
 	js.Global().Set("go_cellClickHandler", js.FuncOf(cellClickHandler))
-	document.Call("getElementById", "runButton").Call("addEventListener", "click", js.FuncOf(runUpdateGrid))
-	document.Call("getElementById", "reset").Call("addEventListener", "click", js.FuncOf(clearAllCellColors))
+	js.Global().Set("go_runUpdateGrid", js.FuncOf(runUpdateGrid))
+	js.Global().Set("go_clearAllCellColors", js.FuncOf(clearAllCellColors))
+	js.Global().Set("go_createExGrid", js.FuncOf(createExGrid))
+	js.Global().Set("go_countGrids", js.FuncOf(countGrids))
+
 }
 
 func createGrid(_ js.Value, _ []js.Value) interface{} {
@@ -55,6 +59,27 @@ func cellClickHandler(this js.Value, args []js.Value) interface{} {
 
 func runUpdateGrid(_ js.Value, _ []js.Value) interface{} {
 	grid = UpdateGrid(grid)
+	colorGrid(grid)
+	return nil
+}
+
+func countGrids(_ js.Value, _ []js.Value) interface{} {
+	count := 0
+	var coloredgrid gridInt
+	for i := 0; i < numRows; i++ {
+		for j := 0; j < numCols; j++ {
+			if grid[i][j] {
+				count++
+				coloredgrid = append(coloredgrid, []int{i, j})
+			}
+		}
+	}
+
+	println("count:", count)
+	return nil
+}
+
+func colorGrid(grid gridBool) interface{} {
 	for i := 0; i < numRows; i++ {
 		for j := 0; j < numCols; j++ {
 			cellElem := document.Call("querySelector", ".cell[data-row='"+strconv.Itoa(i)+"'][data-col='"+strconv.Itoa(j)+"']")
@@ -67,7 +92,6 @@ func runUpdateGrid(_ js.Value, _ []js.Value) interface{} {
 	}
 	return nil
 }
-
 func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
 	cellElems := document.Call("querySelectorAll", ".cell.clicked")
 
@@ -80,6 +104,32 @@ func clearAllCellColors(_ js.Value, _ []js.Value) interface{} {
 		}
 	}
 	return nil
+}
+
+func createExGrid(_ js.Value, _ []js.Value) interface{} {
+	newGrid := exCell()
+	colorGrid(newGrid)
+	grid = newGrid
+	return nil
+}
+
+func exCell() gridBool {
+
+	var newGrid gridBool
+	setPoints := func(points [][]int) {
+		for _, point := range points {
+			x, y := point[0], point[1]
+			newGrid[x][y] = true
+		}
+	}
+
+	setPoints(Glider)
+	setPoints(Boat)
+	setPoints(Beacon)
+	setPoints(Blinker)
+	setPoints(Pulsar)
+
+	return newGrid
 }
 
 func UpdateGrid(grid gridBool) gridBool {

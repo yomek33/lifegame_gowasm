@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Conway's Game of Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
       #grid-container {
         display: grid;
@@ -19,14 +20,108 @@
     </style>
   </head>
   <body>
-    <div id="grid-container"></div>
-    <button id="runButton" disabled>Run</button>
-    <button id="reset">reset</button>
+    <div class="flex justify-start p-5">
+      <div class="lifegame">
+        <div id="grid-container"></div>
+        <div id="button" class="p-1"></div>
+        <button
+          class="border border-rounded border-indigo-600 m-1 p-1"
+          id="runButton"
+          onclick="runUpdateGrid()"
+        >
+          Run
+        </button>
+        <button
+          class="border border-indigo-600 m-1 p-1"
+          id="reset"
+          onclick="clearAllCellColors()"
+        >
+          reset
+        </button>
+        <button
+          class="border border-indigo-600 m-1 p-1"
+          id="example"
+          onclick="createExGrid()"
+        >
+          example
+        </button>
+        <button
+          class="border border-indigo-600 m-1 p-1"
+          id="runButton"
+          onclick="toggleRun()"
+        >
+          Start/Stop
+        </button>
+      </div>
+
+      <div class="pt-4 px-5">
+        <h2 class="text-2xl">Conway's Game of Life</h2>
+        <div class="px-2">
+          <p>
+            created by
+            <a
+              class="text-blue-700 hover:underline"
+              href="https://github.com/yomek33"
+              target="_blank"
+              >Yomek33</a
+            >
+          </p>
+          <p>Powered by Go and WebAssembly</p>
+        </div>
+
+        <div class="py-3">
+          <p>
+            lifegameは生命の誕生、進化、淘汰に関するシミュレーションゲームです
+          </p>
+          <p class="pt-2">以下のルールでセルは進化します</p>
+          <ul class="list-disc pl-4 mb-4">
+            <li>
+              生きているセル（黒）は、周囲に2つまたは3つの生きているセルがあれば生存します。
+            </li>
+            <li>
+              死んでいるセル（白）は、周囲にちょうど3つの生きているセルがあれば誕生します。
+            </li>
+            <li>
+              それ以外の場合、生きているセルは過密により死滅し、孤独により死滅します。
+            </li>
+          </ul>
+          <p class="pt-2">
+            このゲームは、1970年にイギリスの数学者ジョン・ホートン・コンウェイによって考案されました。
+          </p>
+
+          <p class="pt-2">
+            Wikipedia:
+            <a
+              class="text-blue-700 hover:underline"
+              href="https://ja.wikipedia.org/wiki/%E3%83%A9%E3%82%A4%E3%83%95%E3%82%B2%E3%83%BC%E3%83%A0"
+              >ライフゲーム</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
     <script src="wasm_exec.js"></script>
     <script>
       document
         .getElementById("grid-container")
         .addEventListener("click", (event) => cellClick(event.target));
+
+      var running = false;
+      var intervalId = null;
+
+      function toggleRun() {
+        running = !running;
+
+        if (running) {
+          // Start running the update function every 1000 milliseconds (1 second)
+          intervalId = setInterval(runUpdateGrid, 100);
+        } else {
+          // Stop the interval
+          clearInterval(intervalId);
+        }
+      }
+
       if (!WebAssembly.instantiateStreaming) {
         // polyfill
         WebAssembly.instantiateStreaming = async (resp, importObject) => {
@@ -53,6 +148,42 @@
       async function cellClick(targetCell) {
         try {
           return go_cellClickHandler(targetCell);
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
+      async function runUpdateGrid() {
+        try {
+          return go_runUpdateGrid();
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
+      async function createGrid() {
+        try {
+          return go_createGrid();
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
+      async function clearAllCellColors() {
+        try {
+          return go_clearAllCellColors();
+        } catch (err) {
+          inst = await WebAssembly.instantiate(mod, go.importObject);
+          go.run(inst);
+          console.log(err);
+        }
+      }
+      async function createExGrid() {
+        try {
+          return go_createExGrid();
         } catch (err) {
           inst = await WebAssembly.instantiate(mod, go.importObject);
           go.run(inst);
